@@ -1,0 +1,53 @@
+---
+- name: Configure infrastructure for the application
+  hosts: localhost
+  tasks:
+    # Provision EC2 instance
+    - name: Launch EC2 instance
+      amazon.aws.ec2_instance:
+        name: "AppServer"
+        instance_type: "t2.micro"
+        image_id: "ami-0c55b159cbfafe1f0"  # Replace with your preferred AMI ID
+        key_name: "your-key-pair"
+        security_groups:
+          - "app_server_sg"
+      register: ec2_instance
+
+    # Create Security Group
+    - name: Create security group for EC2
+      amazon.aws.ec2_group:
+        name: "app_server_sg"
+        description: "Security group for app server"
+        rules:
+          - proto: tcp
+            ports:
+              - 80
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            ports:
+              - 22
+            cidr_ip: 0.0.0.0/0
+
+    # Create S3 bucket
+    - name: Create S3 bucket
+      amazon.aws.s3_bucket:
+        name: "static-assets-bucket"
+        acl: public-read
+
+    # Set bucket policy
+    - name: Set public-read policy on S3 bucket
+      amazon.aws.s3_bucket_policy:
+        bucket: "static-assets-bucket"
+        policy: |
+          {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Sid": "PublicReadGetObject",
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": "s3:GetObject",
+                "Resource": "arn:aws:s3:::static-assets-bucket/*"
+              }
+            ]
+          }
