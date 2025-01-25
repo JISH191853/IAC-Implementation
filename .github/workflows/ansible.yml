@@ -1,0 +1,19 @@
+name: Ansible Deployment
+
+on:
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  ansible:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Ansible
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible
+
+      - name: Run Ansible Playbook
+        run: ansible-playbook ansible/ansible.yaml
