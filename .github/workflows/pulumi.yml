@@ -1,0 +1,26 @@
+name: Pulumi Deployment
+
+on:
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  pulumi:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Pulumi
+        uses: pulumi/action-install-pulumi-cli@v3
+        with:
+          pulumi-version: 3.x
+
+      - name: Configure Pulumi
+        run: |
+          pulumi login --local
+          pulumi stack select dev || pulumi stack init dev
+        working-directory: pulumi
+
+      - name: Deploy Pulumi Stack
+        run: pulumi up --yes
+        working-directory: pulumi
